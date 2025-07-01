@@ -1,0 +1,47 @@
+####convert bam into bw and normalize the data 
+bamCoverage -b H3K27ac.bam -o H3K27ac.bw --normalizeUsing CPM 
+##bamCoveragge support multiple ways to standard data. In addtion , the option can be Specify parameters
+####RPKM/FPKM:考虑基因长度的标准化(不适用于ChIP-seq, 更适合RNA-seq)
+##BPM:与CPM 类似,但指定特定区域(如promoter)的reads 计数
+###RPGC 去除基因组偏倚的标准化方法适用于AT/GC含量不均的区域
+##Scale:按指定因子缩放(ru --scaleFactor 0.5)
+
+################################################################################## mapping the genome region( promoter enhaner) signal of CHIP-seq or ATAC-seq. Preparing for the visual of downstream  analysis 
+computeMatrix reference-point -S H3K27ac_1.bw Input.bw -R promoters.bed  --referencePoint TSS -a 2000 -b 2000 -out matrix.gz --skipZeros
+
+##reference-point  ###spefiy the computer model , 适用于分析特定基因组位点(如TSS)上下游的信号分布
+##-S, 指定 input sample 如 H3k27ac组蛋白修饰 Chip-seq : H3K27ac 实验组 Input.bw 对照组(IgG对照,用于消除背景信号)
+###-R: the interest genome region (BED) 
+###-a 3000 -b 3000 ### 参考点上下游30000,total length 6000
+###matrix.gz  specify the output file that contain every region signal vaule. it can be plot by plotHeatmap or plotProfile 
+
+###skipzeros,  skip zero region. 
+##--binSize 10  divide 6kb region into 600 bins
+###--missingDataAsZero --maxValue 100  # 将超过 100 的信号值设为 100，避免异常值影响可视化
+####--regionsOfInterest chr1:100000-200000  # 仅分析 chr1 的特定区域
+
+plotHeatmap -m matrix.gz -out Chip_heatmap.png --colorMap RdBu --refPointLabel "TSS"
+####画 profile 曲线#####
+plotProfile -m matrix.gz -out Chip_profile.png --perGroup
+#######################################################################the visual of DNA methylation ###############################################################
+bedGraphToBigWig methylation.bedGraph hg38.chrom.sizes methylation.bw  
+##BedGraph 文件必须按染色体名称和起始位置升序排列,若未排序则会报错. sort -k1,1 -k2,2n methylation.bedGraph > methylation_sorted.bedGraph
+###若从bam开始,则需要先计算覆盖度######
+
+
+
+### 2. 画全基因组甲基化热图
+
+以 CpG 岛 bed 文件为例：
+
+```bash
+computeMatrix scale-regions -S methylation.bw  -R CpG_islands.bed -a 2000 -b 2000  -out meth_matrix.gz
+#####visual the pattern 
+plotHeatmap -m meth_matrix.gz -out Methylation_heatmap.png --colorMap YlGnBu
+```
+
+
+
+
+
+

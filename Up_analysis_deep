@@ -39,7 +39,10 @@ computeMatrix scale-regions -S methylation.bw  -R CpG_islands.bed -a 2000 -b 200
 #####visual the pattern 
 plotHeatmap -m meth_matrix.gz -out Methylation_heatmap.png --colorMap YlGnBu
 ```
+### 3. 画 profile 曲线
 
+```bash
+plotProfile -m meth_matrix.gz -out Methylation_profile.png
 
 
 

@@ -1,0 +1,38 @@
+##ensides 的ID 类型与sele fucntion keytype要一致, 如果是ENTREZID, you can directly run the step 
+ensides=c('400212', '238240', '238204') 
+cols <-  c("SYMBOL", "GENENAME", 'ENTREZID')
+gene = select(org.Hs.eg.db, keys=ensids, columns=cols, keytype="ENTREZID")
+###Annotation ###########################
+# 1.cell category
+ego_CC <- enrichGO(gene = gene$ENTREZID, OrgDb= org.Hs.eg.db, ont = "CC", pAdjustMethod = "BH",
+                   minGSSize = 1, pvalueCutoff = 0.01, qvalueCutoff = 0.01, readable = TRUE)
+# 2.biological progress
+ego_BP <- enrichGO(gene = gene$ENTREZID, OrgDb= org.Hs.eg.db, ont = "BP",
+                   pAdjustMethod = "BH", minGSSize = 1,
+                   pvalueCutoff = 0.01, qvalueCutoff = 0.01, readable = TRUE)
+# 3.molecular function
+ego_MF <- enrichGO(gene = gene$ENTREZID, OrgDb= org.Hs.eg.db, ont = "MF",
+                   pAdjustMethod = "BH", minGSSize = 1, pvalueCutoff = 0.01,
+                   qvalueCutoff = 0.01, readable = TRUE)
+
+# 4.KEGG
+kk <- enrichKEGG(gene = gene$ENTREZID, organism ="human", pvalueCutoff = 0.01,
+                 qvalueCutoff = 0.01, minGSSize = 1,
+                 #readable = TRUE, 
+                 use_internal_data =FALSE)
+########################################################
+gse <- gseGO(gene = gene$ENTREZID, ont = "BP", 
+            OrgDb = org.Hs.eg.db, keyType = "ENTREZID", exponent = 1,
+            nPerm = 1000, minGSSize = 10, maxGSSize = 500, pvalueCutoff = 0.05,
+            pAdjustMethod = "BH", verbose = TRUE, seed = FALSE, by = "fgsea")
+
+results = c(ego_cc, ego_BP, ego_MF, kk)
+names = c('GO enrich: CC', 'GO enrich: BP', 'GO_enrich_MF', 'KEGG enrich')
+for (i in 1:length(results)) {
+    barplot(results[i], showCategory=20,title=names[i])
+    dotplot(results[i],title=names[i])
+}
+
+# GSEA plot
+gseaplot(gse, geneSetID="GO:0004871")
+

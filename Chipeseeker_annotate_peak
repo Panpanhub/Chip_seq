@@ -1,0 +1,53 @@
+##peak在chr and tss around distribution and visual 
+peak  related gene annotation and the distruibution on gene element
+###Acquir BED FIEL FROM GEO DATABASE
+###### firstly input the bed file and at least the fiel contain chr, start and end lociation .  it can also contain other column such as MACS2 peak calling result. 
+you can load bed or bed.gz fiel
+peak <- readPeakFile("peak.bed")
+#############Then you can visule the distribution of peak in chr
+covplot(peak,chr=c("chr1","chr2")
+
+###################################### THE DISTRIBUTION OF PEAK in TSS 
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+### Define the distance of TSS in upstream and downstream 
+
+promoter <- getPromoters(TsDb=txdb,upstream=3000,downstream=3000)
+tagMatrix <- getTagMatrix(peak,windows=promoter)
+tagHeatmap(tagMatrix)  ## ever line stands for one gene, it shows the distribution of TSS on both sieds for all. 
+################################# 用折线图展示TSS 两侧分布情况
+plotAvgProf(tagMatrix, xlim=c(-3000, 3000), xlab="Genomic Region (5'->3')", ylab = "Read Count Frequency")
+
+###################################peak related gene annotate
+
+peakAnno <- annotatePeak(peak, tssRegion = c(-3000, 3000),TxDb = txdb, annoDb = "org.Hs.eg.db")
+
+peak_df <- as.data.frame(peakAnno)  #### according to the realted gene's informaiton and corresponding  region. . according to the result, we can extract related gene and 
+##对peak注释结果进行可视化
+plotAnnoPie(peakAnno)
+############################# the overlap among peaks 
+peak 的overlap分析不仅可以探究生物重复样本间的异质性,还可以进一步识别多种蛋白或者转录因子在调控网络的作用. 若两个chip  protein own significant overlap. it may indicate they combined into polyprotein or they react with eachother. 
+
+enrichPeakOverlap(queryPeak=peak_setA,
+targetPeak=c( peak_setB,peak_setC),
+TxDb=txdb,
+pAdjustMethod="BH",
+nShuffle=1000,
+chainFile=NULL,
+verbose=F)
+依次将query的peak与target中的每一个peak文件进行overlap分析，计算出一个p值代表两个peak之间overlap的程度，p值越小，overlap的程度越高。
+
+ChIPseeker除了peak基因注释的基本功能外，整合了GEO的下载功能与peak的overlap分析，可以方便的将自己的chip_seq数据与GEO的公共数据集进行比较分析。
+
+下载GEO中的peak文件
+以hg19为例，首先查询对应的GEO编号信息，用法如下
+ hg19 <- getGEOInfo(genome="hg19", simplify=T)
+
+
+
+
+
+
+
+
+

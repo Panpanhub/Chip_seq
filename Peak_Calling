@@ -1,0 +1,6 @@
+ln -s /scratch/users/aginolhac/chip-seq/bams/*.bam .
+### perfrom peak calling by MACS2
+macs2 callpeak -t TC1-H3K4-ST2-D0.GRCm38.p3.q30.bam  -c TC1-I-ST2-D0.GRCm38.p3.q30.bam  -f BAM -g mm -n TC1-ST2-H3K4-D0 -B -q 0.01 --outdir TC1-ST2-H3K4-D0 &
+macs2 callpeak -t TC1-H3K4-A-D3.GRCm38.p3.q30.bam \
+               -c TC1-I-A-D3.GRCm38.p3.q30.bam \
+               -f BAM -g mm -n TC1-A-H3K4-D3 -B -q 0.01 --outdir TC1-A-H3K4-D3
